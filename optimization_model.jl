@@ -19,8 +19,9 @@ NEM = 0.12
 id_g = convert(Array,CSV.read(DIR * INPUT * "\\id_test.csv"))
 
 # set-up data collection objects
-result = DataFrame([Float64,Float64, Float64, String], [:pv,:storage,:shed_frac,:id], length(LOAD_SHED) * length(id_g))
-variable_outcome = DataFrame([Float64,Float64, Float64, Float64,Float64, Float64, String], [:power_in,:power_out,:shed,:pv_rpf,:bat_chg,:shed_frac,:id],length(LOAD_SHED) * length(id_g)*8760)
+result = DataFrame(pv=Float64[],storage=Float64[], shed_frac=Float64[], id=String[])
+variable_outcome = DataFrame(power_in=Float64[],power_out=Float64[], shed=Float64[], pv_rpf=Float64[],bat_chg=Float64[], shed_frac=Float64[], id=String[])
+
 
 for j = 1:length(LOAD_SHED)
 
@@ -30,8 +31,8 @@ for j = 1:length(LOAD_SHED)
     for g = 1:length(id_g)
         
         # set-up temporary data collection objects
-        temp_result = DataFrame([Float64,Float64, Float64, String], [:pv,:storage,:shed_frac,:id], 1)
-        temp_outcome = DataFrame([Float64,Float64, Float64, Float64,Float64, Float64, String], [:power_in,:power_out,:shed,:pv_rpf,:bat_chg,:shed_frac,:id],8760)
+        temp_result = DataFrame(pv=Float64[],storage=Float64[], shed_frac=Float64[], id=String[])
+        temp_outcome = DataFrame(power_in=Float64[],power_out=Float64[], shed=Float64[], pv_rpf=Float64[],bat_chg=Float64[], shed_frac=Float64[], id=String[])
 
         #select geography location
         id = string(id_g[g])
@@ -88,7 +89,6 @@ for j = 1:length(LOAD_SHED)
         temp_outcome[:shed_frac] = shed_amt
         temp_outcome[:id] = id
         append!(variable_outcome, temp_outcome)
-
 
     end
 end
