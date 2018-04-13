@@ -16,12 +16,13 @@ LOAD_SHED = [1, 0.75, 0.5, 0.25, 0.1, 0.05, .00001]
 NEM = 0.12
 
 # identify geography IDs to loop through
-id_g = convert(Array,CSV.read(DIR * INPUT * "\\id_test.csv"))
+id_g = convert(Array,CSV.read(DIR * INPUT * "\\id.csv"))
 
 # set-up data collection objects
-result = DataFrame(pv=Float64[],storage=Float64[], shed_frac=Float64[], id=String[])
-variable_outcome = DataFrame(power_in=Float64[],power_out=Float64[], shed=Float64[], pv_rpf=Float64[],bat_chg=Float64[], shed_frac=Float64[], id=String[])
+result = DataFrame([Float64,Float64, Float64, String], [:pv,:storage,:shed_frac,:id], length(LOAD_SHED) * length(id_g))
+outcome = DataFrame([Float64,Float64, Float64, Float64,Float64, Float64, String], [:power_in,:power_out,:shed,:pv_rpf,:bat_chg,:shed_frac,:id],length(LOAD_SHED) * length(id_g)*8760)
 
+row = 1
 
 for j = 1:length(LOAD_SHED)
 
@@ -30,10 +31,7 @@ for j = 1:length(LOAD_SHED)
 
     for g = 1:length(id_g)
         
-        # set-up temporary data collection objects
-        temp_result = DataFrame(pv=Float64[],storage=Float64[], shed_frac=Float64[], id=String[])
-        temp_outcome = DataFrame(power_in=Float64[],power_out=Float64[], shed=Float64[], pv_rpf=Float64[],bat_chg=Float64[], shed_frac=Float64[], id=String[])
-
+        
         #select geography location
         id = string(id_g[g])
     
@@ -74,25 +72,26 @@ for j = 1:length(LOAD_SHED)
         solve(m)
 
         #optimization solution
-        temp_result[:pv] = getvalue(x)
-        temp_result[:storage] = getvalue(y)
-        temp_result[:shed_frac] = shed_amt
-        temp_result[:id] = id
-        append!(result, temp_result)
+        result[row, :pv] = getvalue(x)
+        result[row, :storage] = getvalue(y)
+        result[row, :shed_frac] = shed_amt
+        result[row, :id] = id
+        
 
         #optimization results
-        temp_outcome[:power_in] = getvalue(power_in)
-        temp_outcome[:power_out] = getvalue(power_out)
-        temp_outcome[:shed] = getvalue(shed)
-        temp_outcome[:pv_rpf] = getvalue(pv_rpf)
-        temp_outcome[:bat_chg] = getvalue(bat_chg[1:8760])
-        temp_outcome[:shed_frac] = shed_amt
-        temp_outcome[:id] = id
-        append!(variable_outcome, temp_outcome)
+        outcome[(1+8760*(row - 1)):8760*row, :power_in] = getvalue(power_in)
+        outcome[(1+8760*(row - 1)):8760*row, :power_out] = getvalue(power_out)
+        outcome[(1+8760*(row - 1)):8760*row, :shed] = getvalue(shed)
+        outcome[(1+8760*(row - 1)):8760*row, :pv_rpf] = getvalue(pv_rpf)
+        outcome[(1+8760*(row - 1)):8760*row, :bat_chg] = getvalue(bat_chg[1:8760])
+        outcome[(1+8760*(row - 1)):8760*row, :shed_frac] = fill(shed_amt,8760)
+        outcome[(1+8760*(row - 1)):8760*row, :id] = fill(id,8760)
+        
+        row +=1
 
     end
 end
 
 #Write out results
 CSV.write(DIR * OUT * "\\opt_result.csv", result)
-CSV.write((DIR * OUT * "\\variable_outcome.csv"), variable_outcome)
+CSV.write((DIR * OUT * "\\variable_outcome.csv"), outcome)
