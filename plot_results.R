@@ -43,12 +43,12 @@ for (index in 1:length){
   
   ##PV
   print(ggplot(sizing, aes(x = shed_frac, y = pv)) +
-          geom_point() +
+          geom_point(col=1) +
           facet_wrap_paginate(~id, ncol = 4, nrow = 4, page = index)) 
   
   ##storage
-  print(ggplot(sizing, aes(x = shed_frac, y = storage),col=2) +
-          geom_point() +
+  print(ggplot(sizing, aes(x = shed_frac, y = storage)) +
+          geom_point(col=2) +
           facet_wrap_paginate(~id, ncol = 4, nrow = 4, page = index)) 
   
 }

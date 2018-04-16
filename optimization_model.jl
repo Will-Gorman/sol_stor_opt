@@ -76,6 +76,8 @@ for j = 1:length(LOAD_SHED)
         result[row, :storage] = getvalue(y)
         result[row, :shed_frac] = shed_amt
         result[row, :id] = id
+        result[row, :load] = tot_load
+        result[row, :ann_cost] = getobjectivevalue(m)
         
 
         #optimization results
